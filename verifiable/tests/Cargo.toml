@@ -1,0 +1,26 @@
+[package]
+name = "tests"
+version = "0.1.0"
+edition = "2021"
+
+[features]
+
+[dependencies]
+
+[dev-dependencies]
+hypervisor = { path = "../binaries/hypervisor" }
+
+aes-gcm-siv.workspace = true
+alloy.workspace = true
+const-hex.workspace = true
+k256.workspace = true
+rand.workspace = true
+reqwest.workspace = true
+test-log.workspace = true
+tokio.workspace = true
+x402-reqwest.workspace = true
+x402-rs.workspace = true
+
+[[test]]
+name = "x402_execute_wasm"
+path = "integration/x402_execute_wasm.rs"

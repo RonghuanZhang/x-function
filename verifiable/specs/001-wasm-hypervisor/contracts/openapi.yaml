@@ -1,0 +1,466 @@
+openapi: 3.0.3
+info:
+  title: WASM Hypervisor API
+  description: Secure WASM program execution with cryptographic protection
+  version: 1.0.0
+  contact:
+    name: WASM Hypervisor Team
+    email: hypervisor@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.hypervisor.example.com/v1
+    description: Production server
+  - url: http://localhost:3000/v1
+    description: Development server
+
+security:
+  - ApiKeyAuth: []
+  - BearerAuth: []
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    ExecutionRequest:
+      type: object
+      required:
+        - encrypted_wasm
+        - function_name
+        - public_key
+        - request_metadata
+      properties:
+        encrypted_wasm:
+          type: string
+          format: base64
+          description: AES-GCM encrypted WASM program binary
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        function_name:
+          type: string
+          pattern: '^[a-zA-Z_][a-zA-Z0-9_]*$'
+          description: WASM function name to execute
+          example: "main"
+        arguments:
+          type: array
+          items:
+            type: object
+          description: Function arguments as JSON values
+          default: []
+          example: [{"value": 42}, {"text": "hello"}]
+        public_key:
+          type: string
+          format: base64
+          description: P-256 public key for result encryption (64 bytes)
+          example: "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEC..."
+        request_metadata:
+          $ref: '#/components/schemas/RequestMetadata'
+        timeout_seconds:
+          type: integer
+          minimum: 1
+          maximum: 300
+          default: 30
+          description: Request timeout in seconds
+
+    RequestMetadata:
+      type: object
+      required:
+        - client_id
+        - version
+      properties:
+        client_id:
+          type: string
+          description: Client identifier for tracking
+          example: "client-app-1.0"
+        version:
+          type: string
+          description: API version being used
+          example: "1.0.0"
+        priority:
+          type: string
+          enum: [low, normal, high, critical]
+          default: normal
+          description: Request priority level
+        callback_url:
+          type: string
+          format: uri
+          description: Optional webhook URL for async completion
+
+    ExecutionResponse:
+      type: object
+      required:
+        - request_id
+        - encrypted_result
+        - result_commitment
+        - execution_summary
+      properties:
+        request_id:
+          type: string
+          format: uuid
+          description: Unique request identifier
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        encrypted_result:
+          type: string
+          format: base64
+          description: AES-GCM encrypted execution result
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        result_commitment:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+          description: SHA-256 hash commitment of unencrypted result
+          example: "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef12"
+        execution_summary:
+          $ref: '#/components/schemas/ExecutionSummary'
+        commitment_proof:
+          type: string
+          description: Merkle proof for audit verification
+          example: "proof_data_base64_encoded"
+
+    ExecutionSummary:
+      type: object
+      required:
+        - status
+        - execution_time_ms
+      properties:
+        status:
+          type: string
+          enum: [success, timeout, error, resource_exhausted, cancelled]
+          description: Execution status
+          example: "success"
+        execution_time_ms:
+          type: integer
+          minimum: 0
+          description: Actual execution time in milliseconds
+          example: 150
+        memory_used_bytes:
+          type: integer
+          minimum: 0
+          description: Peak memory usage during execution
+          example: 1048576
+        gas_consumed:
+          type: integer
+          minimum: 0
+          description: Computational units consumed
+          example: 50000
+        error_message:
+          type: string
+          description: Error details if execution failed
+          nullable: true
+        resource_limits_hit:
+          type: array
+          items:
+            type: string
+          description: List of exceeded resource limits
+          example: ["memory", "time"]
+
+    CommitmentVerification:
+      type: object
+      required:
+        - request_id
+        - commitment_type
+        - hash_value
+        - is_valid
+      properties:
+        request_id:
+          type: string
+          format: uuid
+          description: Request identifier to verify
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        commitment_type:
+          type: string
+          enum: [request, result, combined]
+          description: Type of commitment to verify
+        hash_value:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+          description: Expected hash value for verification
+          example: "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef12"
+        is_valid:
+          type: boolean
+          description: Verification result
+        verification_details:
+          type: string
+          description: Additional verification information
+          nullable: true
+
+    HealthStatus:
+      type: object
+      required:
+        - status
+        - timestamp
+        - version
+      properties:
+        status:
+          type: string
+          enum: [healthy, degraded, unhealthy]
+          description: System health status
+        timestamp:
+          type: string
+          format: date-time
+          description: Health check timestamp
+        version:
+          type: string
+          description: API version
+          example: "1.0.0"
+        uptime_seconds:
+          type: integer
+          description: Server uptime in seconds
+        concurrent_executions:
+          type: integer
+          description: Currently executing programs
+        available_instances:
+          type: integer
+          description: Available execution instances
+
+    Error:
+      type: object
+      required:
+        - error_code
+        - message
+        - timestamp
+      properties:
+        error_code:
+          type: string
+          description: Machine-readable error code
+          example: "EXECUTION_TIMEOUT"
+        message:
+          type: string
+          description: Human-readable error message
+          example: "Program execution exceeded timeout limit"
+        timestamp:
+          type: string
+          format: date-time
+          description: Error occurrence timestamp
+        request_id:
+          type: string
+          format: uuid
+          description: Associated request ID if available
+          nullable: true
+        details:
+          type: object
+          description: Additional error context
+          nullable: true
+
+paths:
+  /execute:
+    post:
+      summary: Execute WASM program
+      description: Submit WASM program for secure execution with cryptographic protection
+      operationId: executeWasm
+      security:
+        - ApiKeyAuth: []
+      tags:
+        - Execution
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ExecutionRequest'
+            examples:
+              simple_execution:
+                summary: Simple WASM execution
+                value:
+                  encrypted_wasm: "base64_encoded_wasm_binary"
+                  function_name: "main"
+                  public_key: "base64_encoded_public_key"
+                  request_metadata:
+                    client_id: "test-client"
+                    version: "1.0.0"
+                  timeout_seconds: 30
+      responses:
+        '200':
+          description: Execution completed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ExecutionResponse'
+              examples:
+                success:
+                  summary: Successful execution
+                  value:
+                    request_id: "550e8400-e29b-41d4-a716-446655440000"
+                    encrypted_result: "base64_encoded_result"
+                    result_commitment: "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef12"
+                    execution_summary:
+                      status: "success"
+                      execution_time_ms: 150
+                      memory_used_bytes: 1048576
+                      gas_consumed: 50000
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '413':
+          description: Payload too large
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '429':
+          description: Too many requests
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '504':
+          description: Gateway timeout
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /verify/{request_id}:
+    get:
+      summary: Verify commitment
+      description: Verify cryptographic commitment for audit purposes
+      operationId: verifyCommitment
+      security:
+        - BearerAuth: []
+      tags:
+        - Verification
+      parameters:
+        - name: request_id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Request identifier to verify
+          example: "550e8400-e29b-41d4-a716-446655440000"
+        - name: commitment_type
+          in: query
+          required: true
+          schema:
+            type: string
+            enum: [request, result, combined]
+          description: Type of commitment to verify
+          example: "result"
+        - name: hash_value
+          in: query
+          required: true
+          schema:
+            type: string
+            pattern: '^[a-f0-9]{64}$'
+          description: Expected hash value for verification
+          example: "a1b2c3d4e5f6789012345678901234567890abcdef1234567890abcdef12"
+      responses:
+        '200':
+          description: Verification completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CommitmentVerification'
+        '404':
+          description: Request not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Verification failed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /health:
+    get:
+      summary: Health check
+      description: Get system health status and metrics
+      operationId: healthCheck
+      tags:
+        - Monitoring
+      responses:
+        '200':
+          description: Health status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/HealthStatus'
+              examples:
+                healthy:
+                  summary: System is healthy
+                  value:
+                    status: "healthy"
+                    timestamp: "2025-11-11T10:00:00Z"
+                    version: "1.0.0"
+                    uptime_seconds: 3600
+                    concurrent_executions: 5
+                    available_instances: 95
+
+  /metrics:
+    get:
+      summary: Get metrics
+      description: Get detailed performance and usage metrics
+      operationId: getMetrics
+      security:
+        - BearerAuth: []
+      tags:
+        - Monitoring
+      responses:
+        '200':
+          description: Metrics data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  execution_count_24h:
+                    type: integer
+                    description: Total executions in last 24 hours
+                  average_execution_time_ms:
+                    type: number
+                    description: Average execution time in milliseconds
+                  concurrent_capacity:
+                    type: integer
+                    description: Maximum concurrent execution capacity
+                  error_rate_percent:
+                    type: number
+                    description: Error rate as percentage
+                  memory_usage_mb:
+                    type: number
+                    description: Current memory usage in MB
+        '401':
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+tags:
+  - name: Execution
+    description: WASM program execution endpoints
+  - name: Verification
+    description: Cryptographic verification endpoints
+  - name: Monitoring
+    description: Health and metrics endpoints
