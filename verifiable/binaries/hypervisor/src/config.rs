@@ -14,7 +14,7 @@ impl Default for Config {
         Config {
             executor_path: "./data/executor".parse().expect("executor path"),
             app_path: "./data/apps".parse().expect("app path"),
-            listening: "0.0.0.0:3000".parse().expect("hypervisor listen address"),
+            listening: "0.0.0.0:8080".parse().expect("hypervisor listen address"),
         }
     }
 }

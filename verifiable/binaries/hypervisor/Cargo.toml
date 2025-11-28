@@ -16,8 +16,11 @@ path = "src/lib.rs"
 [dependencies]
 attest = { path = "../../crates/attest" }
 
+a2a-client.workspace = true
+a2a-rs.workspace = true
 aes-gcm-siv.workspace = true
 anyhow.workspace = true
+async-trait.workspace = true
 axum.workspace = true
 blake3.workspace = true
 chrono.workspace = true
@@ -26,7 +29,10 @@ const-hex.workspace = true
 dashmap.workspace = true
 k256.workspace = true
 hkdf.workspace = true
+quick-xml.workspace = true
 rand.workspace = true
+reqwest.workspace = true
+rig-core.workspace = true
 secrecy.workspace = true
 serde.workspace = true
 serde_json.workspace = true

@@ -4,6 +4,8 @@ pub mod encrypt;
 pub mod execute;
 pub mod ping;
 pub mod policy;
+pub mod search;
+pub mod agent;
 
 pub trait ServerState: Clone + Sync + Send + 'static {}
 impl<T: Clone + Sync + Send + 'static> ServerState for T {}

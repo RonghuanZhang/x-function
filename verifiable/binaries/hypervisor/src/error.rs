@@ -11,6 +11,9 @@ pub enum HypervisorError {
 
     #[error(transparent)]
     Io(#[from] std::io::Error),
+
+    #[error("Invalid request: {0}")]
+    InvalidRequest(String, StatusCode),
 }
 
 impl IntoResponse for HypervisorError {
@@ -26,6 +29,7 @@ impl IntoResponse for HypervisorError {
             }
             #[rustfmt::skip]
             HypervisorError::Io(e) => (StatusCode::INTERNAL_SERVER_ERROR, e.to_string()),
+            HypervisorError::InvalidRequest(msg, status_code) => (status_code, msg),
         };
 
         let err_resp = ErrorResponse { msg: err_msg };

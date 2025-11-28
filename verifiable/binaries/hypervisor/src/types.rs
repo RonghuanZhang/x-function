@@ -4,14 +4,16 @@ use k256::{
     ecdsa::{SigningKey, VerifyingKey},
     EncodedPoint,
 };
+use tokio::{sync::Mutex, task::JoinHandle};
 use uuid::Uuid;
 
 use crate::Config;
 
 #[derive(Clone, Default)]
-pub(crate) struct HypervisorState {
+pub struct HypervisorState {
     pub config: Config,
     session_key_pairs: SessionKeyPairs,
+    agent_service: Arc<Mutex<Option<AgentService>>>,
 }
 
 impl HypervisorState {
@@ -20,6 +22,30 @@ impl HypervisorState {
             config,
             ..Default::default()
         }
+    }
+
+    pub async fn set_agent(&self, agent_name: String, handle: JoinHandle<anyhow::Result<()>>) {
+        let mut agent_service = self.agent_service.lock().await;
+
+        if let Some(a) = agent_service.as_mut() {
+            a.name = agent_name;
+            a.service_handle = handle;
+        }
+    }
+
+    pub async fn get_running_agent_name(&self) -> Option<String> {
+        let agent_service = self.agent_service.lock().await;
+        agent_service.as_ref().map(|a| a.name.clone())
+    }
+
+    pub async fn stop_running_agent(&self) {
+        let mut agent_service = self.agent_service.lock().await;
+
+        if let Some(a) = agent_service.as_mut() {
+            a.service_handle.abort();
+        }
+
+        *agent_service = None;
     }
 
     #[cfg(test)]
@@ -39,12 +65,12 @@ impl HypervisorState {
     }
 }
 
-pub(crate) struct ServerContext {
+pub struct ServerContext {
     pub state: HypervisorState,
 }
 
 #[derive(Clone, Default)]
-pub(crate) struct SessionKeyPairs(Arc<dashmap::DashMap<EncodedPoint, (SigningKey, Uuid)>>);
+pub struct SessionKeyPairs(Arc<dashmap::DashMap<EncodedPoint, (SigningKey, Uuid)>>);
 
 impl SessionKeyPairs {
     pub fn create(self, pubkey: &VerifyingKey) -> (VerifyingKey, Uuid) {
@@ -56,4 +82,9 @@ impl SessionKeyPairs {
 
         (pk, uuid)
     }
+}
+
+struct AgentService {
+    name: String,
+    service_handle: JoinHandle<anyhow::Result<()>>,
 }

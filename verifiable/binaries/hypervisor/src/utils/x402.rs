@@ -4,6 +4,7 @@ use x402_rs::{
     types::{EvmAddress, MoneyAmount, TokenAmount},
 };
 
+pub const X402_BASE_URL: &str = "http://localhost:8080";
 pub const X402_FACILITATOR_URL: &str = "https://x402.org/facilitator/";
 pub const X402_FIXED_PRICE_USDC: &str = "0.01";
 pub const X402_PAY_RECEIPIENT: &str = "0xfa4c85133b817e0cefce87b6393841ef45d25ac4";
@@ -21,5 +22,6 @@ pub fn create_x402_middleware(price: &str) -> X402Middleware<FacilitatorClient> 
 
     X402Middleware::try_from(X402_FACILITATOR_URL)
         .expect("valid x402 facilitator url")
+        .with_base_url(X402_BASE_URL.parse().expect("x402 base url"))
         .with_price_tag(vec![price_tag])
 }

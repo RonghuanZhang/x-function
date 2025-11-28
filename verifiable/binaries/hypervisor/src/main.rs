@@ -11,7 +11,7 @@ use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 struct Args {
     /// Path to config file
     #[arg(short, long)]
-    config: PathBuf,
+    config: Option<PathBuf>,
 }
 
 #[tokio::main]
@@ -27,8 +27,13 @@ async fn main() -> anyhow::Result<()> {
 
     let args = Args::parse();
     let config: Config = {
-        let config_str = tokio::fs::read_to_string(args.config).await?;
-        toml::from_str(&config_str)?
+        match args.config {
+            Some(path) => {
+                let config_str = tokio::fs::read_to_string(path).await?;
+                toml::from_str(&config_str)?
+            }
+            None => Config::default(),
+        }
     };
 
     let server = Server::build(config)?;

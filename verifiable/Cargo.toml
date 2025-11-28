@@ -5,9 +5,9 @@ edition = "2021"
 [workspace]
 resolver = "2"
 members = [
-  "./binaries/hypervisor"
-, "./crates/attest"
-
+  "binaries/hypervisor"
+, "binaries/cli"
+, "crates/attest"
 , "tests"
 ]
 exclude = [
@@ -16,13 +16,16 @@ exclude = [
 ]
 
 [workspace.dependencies]
+a2a-client = { git = "https://github.com/emillindfors/a2a-rs", rev = "b2d8dbf" }
+a2a-rs = { git = "https://github.com/emillindfors/a2a-rs", rev = "b2d8dbf", features = ["http-server", "tracing"] }
 aes-gcm-siv = "0.11"
 alloy = "1.0"
 anyhow = "1.0"
+async-trait = "0.1"
 axum = { version = "0.8", features = ["macros", "json"] }
 blake3 = "1.8"
 chrono = { version = "0.4", features = ["serde"] }
-clap = "4.5"
+clap = { version = "4.5", features = ["derive"] }
 const-hex = "1.17"
 dashmap = "6"
 dcap-rs = { git = "https://github.com/SeaSailors/dcap-rs", branch = "feat-quote-v5" }
@@ -50,6 +53,8 @@ wasmtime-wasi = "38"
 x402-rs = { git = "https://github.com/SeaSailors/x402-rs", branch = "chore-compile", features = ["telemetry"] }
 x402-axum = { git = "https://github.com/SeaSailors/x402-rs", branch = "chore-compile", features = ["telemetry"] }
 x402-reqwest = { git = "https://github.com/SeaSailors/x402-rs", branch = "chore-compile", features = ["telemetry"] }
+rig-core = { git = "https://github.com/SeaSailors/rig", branch = "feat-minimax-compatible" }
+quick-xml = { version = "0.38", features = ["serialize"] }
 
 # dev-dependencies
 axum-test = "18.2"

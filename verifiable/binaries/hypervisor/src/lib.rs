@@ -1,5 +1,6 @@
 pub mod api;
 
+mod agent;
 mod config;
 mod error;
 mod server;

@@ -27,6 +27,8 @@
 
   devcontainer.enable = true;
 
+  env.MINIMAX_API_KEY = config.secretspec.secrets.MINIMAX_API_KEY;
+
   # https://devenv.sh/processes/
   # processes.dev.exec = "${lib.getExe pkgs.watchexec} -n -- ls -la";
 

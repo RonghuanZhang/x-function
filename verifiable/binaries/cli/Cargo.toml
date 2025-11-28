@@ -1,0 +1,14 @@
+[package]
+name = "cli"
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+a2a-client.workspace = true
+a2a-rs.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+reqwest = { workspace = true, features = ["json"] }
+serde_json.workspace = true
+tokio = { workspace = true, features = ["full"] }
+uuid.workspace = true

@@ -24,6 +24,8 @@ impl Server {
             .register_api(api::encrypt::api_register)
             .register_api(api::execute::wasm::api_register)
             .register_api(api::policy::python::api_register)
+            .register_api(api::search::api_register)
+            .register_api(api::agent::api_register)
             .register_x402_api(state.clone(), api::execute::wasm::api_x402_register)
             .register_x402_api(state.clone(), api::policy::python::api_x402_register)
             .with_state(state)
