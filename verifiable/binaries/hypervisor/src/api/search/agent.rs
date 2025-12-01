@@ -16,6 +16,7 @@ pub fn api_register(router: Router<HypervisorState>) -> Router<HypervisorState> 
     router.route("/search", post(search_handler))
 }
 
+// TODO: agent discovry through registry
 async fn search_handler(
     State(_state): State<HypervisorState>,
     Json(request): Json<SearchRequest>,

@@ -5,7 +5,7 @@ use crate::agent::a2a::protocol::A2AProtocol;
 
 pub struct A2AServer {}
 
-// TODO: make it to riscv guest
+// TODO: make it to riscv guest, interactive throught io
 impl A2AServer {
     pub async fn start(agent: impl A2AProtocol, addr: impl AsRef<str>) -> Result<()> {
         let agent_info = agent.agent_info();

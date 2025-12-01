@@ -13,6 +13,7 @@ pub trait A2AProtocol {
     fn protocol_message_handler(&self, _: InMemoryTaskStorage) -> A2AProtocolHandler;
 }
 
+// FIX: don't hard code agent
 #[async_trait]
 impl A2AProtocol for Personas {
     fn agent_info(&self) -> SimpleAgentInfo {
