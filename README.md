@@ -11,6 +11,6 @@
 
 | Extension Name | Protocol Document | Directory |
 | :--- | :--- | :--- |
-| **x/function - serverless** | [Extension 1: Serverless Deployment](https://docs.saharaai.com/open-source-agentic-protocols#extension-1-the-x-function-serverless-modular-deployment-for-fair-value-distribution) | [serverless](https://github.com/SaharaLabsAI/x-function/tree/main/x402) |
+| **x/function - serverless** | [Extension 1: Serverless Deployment](https://docs.saharaai.com/open-source-agentic-protocols#extension-1-the-x-function-serverless-modular-deployment-for-fair-value-distribution) | [serverless](https://github.com/SaharaLabsAI/x-function/tree/main/serverless) |
 | **x/function - verifiable** | [Extension 2: Verifiable Compute](https://docs.saharaai.com/open-source-agentic-protocols#extension-2-the-x-function-verifiable-trustless-compute-for-secure-agent-workflows) | [verifiable](https://github.com/SaharaLabsAI/x-function/tree/main/verifiable) |
 | **x/function - customized policy** | [Extension 3: Customized Policy](https://docs.saharaai.com/open-source-agentic-protocols#extension-3-the-x-function-customized-policy-programmable-governance-for-programmable-agent-workflow) | [policy](https://github.com/SaharaLabsAI/x-function/tree/main/policy) |
